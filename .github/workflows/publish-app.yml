@@ -7,6 +7,7 @@ on:
 env:
   PROJECT_PATH: 'Necroperator/Necroperator.csproj'
   DOTNET_VERSION: '9.0.x'
+  RUNTIME: 'win-x64'
 
 jobs:
   publish:
@@ -19,13 +20,13 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Install dependencies
-      run: dotnet restore ${{ env.PROJECT_PATH }} --runtime win-x64
+      run: dotnet restore ${{ env.PROJECT_PATH }} --runtime ${{ env.RUNTIME }}
 
     - name: Build project
-      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore --runtime win-x64
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore --runtime ${{ env.RUNTIME }}
   
     - name: Publish project
-      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --self-contained -r win-x64 -p:PublishSingleFile=true --no-build
+      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --self-contained --runtime ${{ env.RUNTIME }} -p:PublishSingleFile=true --no-build
 
     - name: Create release
       uses: actions/create-release@v1
