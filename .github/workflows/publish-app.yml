@@ -29,19 +29,8 @@ jobs:
       run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --self-contained --runtime ${{ env.RUNTIME }} -p:PublishSingleFile=true --no-build
 
     - name: Create release
-      uses: actions/create-release@v1
-      id: create_release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v3
       with:
-        tag_name: ${{ github.run_number }}
-        release_name: ${{ github.run_number }}
-
-    - name: Bundle artifacts
-      uses: csexton/release-asset-action@v3
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        pattern: |
+        files: |
           publish/*.dll
           publish/*.exe
-        release-url: ${{ steps.create_release.outputs.upload_url }}
