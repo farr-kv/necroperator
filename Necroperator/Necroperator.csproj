@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
+	  <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,10 +42,6 @@
     </Resource>
     <Resource Include="Resources\icon_start.png" />
     <Resource Include="Resources\icon_stop.png" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include=".github\workflows\publish-app.yml" />
   </ItemGroup>
 
 </Project>
