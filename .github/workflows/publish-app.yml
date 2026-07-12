@@ -19,10 +19,10 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Install dependencies
-      run: dotnet restore ${{ env.PROJECT_PATH }}
+      run: dotnet restore ${{ env.PROJECT_PATH }} --runtime win-x64
 
     - name: Build project
-      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore --runtime win-x64
   
     - name: Publish project
       run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --self-contained -r win-x64 -p:PublishSingleFile=true --no-build
