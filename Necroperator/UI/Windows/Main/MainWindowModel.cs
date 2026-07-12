@@ -1,9 +1,9 @@
 ﻿using Necroperator.Services;
 using System.IO;
 
-namespace Necroperator.UI.ViewModels.Implementations
+namespace Necroperator.UI.Windows.Main
 {
-    internal class MainWindowModel : BaseModel, IMainWindowModel
+    public class MainWindowModel : BaseViewModel
     {
         private readonly string[] GameIds = [
             "1771", // ubiconnect

@@ -1,6 +1,6 @@
 ﻿namespace Necroperator.Services
 {
-    internal interface IPeriodicBackupService
+    public interface IPeriodicBackupService
     {
         bool IsRunning { get; }
 

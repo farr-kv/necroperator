@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Necroperator.UI.ViewModels
+namespace Necroperator.UI
 {
-    internal abstract class BaseModel: INotifyPropertyChanged
+    public abstract class BaseViewModel: INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler? PropertyChanged;
 

@@ -1,6 +1,6 @@
 ﻿namespace Necroperator.Services
 {
-    internal interface IFileMonitor
+    public interface IFileMonitor
     {
         bool IsRunning { get; }
 

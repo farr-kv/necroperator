@@ -1,8 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Necroperator.Services;
 using Necroperator.Services.Implementations;
-using Necroperator.UI.ViewModels;
-using Necroperator.UI.ViewModels.Implementations;
+using Necroperator.UI.Windows.Main;
 using System.Windows;
 
 namespace Necroperator
@@ -27,12 +26,15 @@ namespace Necroperator
 
         private void ConfigureServices(IServiceCollection services)
         {
+            // Services
             services.AddSingleton<IEventBus, EventBus>();
             services.AddTransient<IFileMonitor, FileMonitor>();
             services.AddTransient<IPeriodicBackupService, PeriodicBackupService>();
 
-            services.AddTransient<IMainWindowModel, MainWindowModel>();
+            // ViewModels
+            services.AddTransient<MainWindowModel>();
 
+            // Windows
             services.AddSingleton<MainWindow>();
         }
 

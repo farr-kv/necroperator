@@ -1,10 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 
-namespace Necroperator.UI.Controls
+namespace Necroperator.UI.Controls.LogEvent
 {
     /// <summary>
     /// Interaction logic for LogEventControl.xaml

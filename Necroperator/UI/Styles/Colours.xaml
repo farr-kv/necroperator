@@ -1,0 +1,12 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<SolidColorBrush x:Key="ColourPrimary" Color="#800033" />
+    <SolidColorBrush x:Key="ColourText" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="ColourTextDimmed" Color="#B0B0B0" />
+	<SolidColorBrush x:Key="ColourPositive" Color="#339933" />
+	<SolidColorBrush x:Key="ColourWarning" Color="#E68A00" />
+	<SolidColorBrush x:Key="ColourNegative" Color="#CC0000" />
+
+</ResourceDictionary>

@@ -1,21 +1,20 @@
 ﻿using Microsoft.Win32;
 using Necroperator.Extensions;
 using Necroperator.Services;
-using Necroperator.UI.Controls;
-using Necroperator.UI.ViewModels;
+using Necroperator.UI.Controls.LogEvent;
 using System.Windows;
 
-namespace Necroperator
+namespace Necroperator.UI.Windows.Main
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window
     {
-        private IMainWindowModel Model => (IMainWindowModel)this.DataContext;
+        private MainWindowModel Model => (MainWindowModel)this.DataContext;
         private readonly IEnumerable<IDisposable> disposables;
 
-        public MainWindow(IEventBus eventBus, IMainWindowModel model)
+        public MainWindow(IEventBus eventBus, MainWindowModel model)
         {
             this.DataContext = model;
             InitializeComponent();
