@@ -20,7 +20,7 @@
     </Window.Resources>
 
     <Grid>
-        <Image Name="Image_Banner" Source="/Resources/banner-1.png" Stretch="UniformToFill" Opacity="0.25" />
+        <Image Name="Image_Banner" Source="/Resources/banner.png" Stretch="UniformToFill" Opacity="0.25" />
 
         <DockPanel Background="Transparent">
             <!--Title bar-->

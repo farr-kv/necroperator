@@ -7,18 +7,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
 	<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+	<ApplicationIcon>Resources\app_icon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\banner-1.png" />
-    <None Remove="Resources\banner-2.png" />
-    <None Remove="Resources\icon_browse.png" />
-    <None Remove="Resources\icon_checkbox.png" />
-    <None Remove="Resources\icon_checkbox_checked.png" />
-    <None Remove="Resources\icon_clear.png" />
-    <None Remove="Resources\icon_close.png" />
-    <None Remove="Resources\icon_start.png" />
-    <None Remove="Resources\icon_stop.png" />
+    <Content Include="Resources\app_icon.ico" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,19 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\banner-1.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
-    <Resource Include="Resources\banner-2.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Resources\banner.png" />
     <Resource Include="Resources\icon_browse.png" />
-    <Resource Include="Resources\icon_checkbox.png" />
-    <Resource Include="Resources\icon_checkbox_checked.png" />
     <Resource Include="Resources\icon_clear.png" />
-    <Resource Include="Resources\icon_close.png">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </Resource>
+    <Resource Include="Resources\icon_close.png" />
     <Resource Include="Resources\icon_start.png" />
     <Resource Include="Resources\icon_stop.png" />
   </ItemGroup>
