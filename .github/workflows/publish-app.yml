@@ -8,6 +8,7 @@ env:
   PROJECT_PATH: 'Necroperator/Necroperator.csproj'
   DOTNET_VERSION: '9.0.x'
   RUNTIME: 'win-x64'
+  RELEASE_TAG: v1.0.${{ github.run_number }}
 
 jobs:
   publish:
@@ -40,5 +41,5 @@ jobs:
     - name: Create release
       uses: softprops/action-gh-release@v3
       with:
-        tag_name: ${{ github.run_number }}
+        tag_name: ${{ env.RELEASE_TAG }}
         files: ./Necroperator.zip
