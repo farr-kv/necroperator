@@ -9,7 +9,7 @@ namespace Necroperator
 {
     public partial class App : Application
     {
-        private IServiceProvider serviceProvider;
+        private IServiceProvider? serviceProvider;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -47,7 +47,7 @@ namespace Necroperator
 
         private void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            var logger = serviceProvider.GetService<IEventBus>();
+            var logger = serviceProvider?.GetService<IEventBus>();
             logger?.Publish(Events.Error($"Unhandled exception: {e.Exception.Message}"));
         }
     }
