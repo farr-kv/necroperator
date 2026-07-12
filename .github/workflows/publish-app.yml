@@ -29,12 +29,12 @@ jobs:
       run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore --runtime ${{ env.RUNTIME }}
   
     - name: Publish project
-      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --self-contained --runtime ${{ env.RUNTIME }} -p:PublishSingleFile=true --no-build
+      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --self-contained --runtime ${{ env.RUNTIME }} -p:PublishSingleFile=true --no-build --output ./publish
 
     - name: Create release
       uses: softprops/action-gh-release@v3
       with:
         tag_name: ${{ github.run_number }}
         files: |
-          *.dll
-          *.exe
+          publish/*.dll
+          publish/*.exe
