@@ -1,0 +1,105 @@
+﻿<Window x:Class="Necroperator.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Necroperator"
+        xmlns:converter="clr-namespace:Necroperator.UI.Converters"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+	    Width="900" Height="600"
+	    MinWidth="450" MinHeight="300"
+        WindowStyle="None"
+        ResizeMode="CanResizeWithGrip"
+        AllowsTransparency="True"
+        Background="Black"
+        Title="Necroperator">
+    <Window.Resources>
+        <converter:BooleanNegativeConverter x:Key="BooleanNegativeConverter" />
+        <converter:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converter:InvertedBooleanToVisibilityConverter x:Key="InvertedBooleanToVisibilityConverter" />
+    </Window.Resources>
+
+    <Grid>
+        <Image Name="Image_Banner" Source="/Resources/banner-1.png" Stretch="UniformToFill" Opacity="0.25" />
+
+        <DockPanel Background="Transparent">
+            <!--Title bar-->
+            <Grid Background="#A0000000" DockPanel.Dock="Top" MouseDown="GridTitlebar_MouseDown">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Necroperator" HorizontalAlignment="Center" Style="{StaticResource Title}"/>
+                <Button Grid.Column="1" Style="{StaticResource ImageButton}" Click="ButtonClose_Click">
+                    <Image Source="/Resources/icon_close.png"/>
+                </Button>
+            </Grid>
+            
+            <!--Save locations-->
+            <Grid Margin="8" DockPanel.Dock="Top" IsEnabled="{Binding IsRunning, Converter={StaticResource BooleanNegativeConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Grid.Column="0" Text="Save location:" VerticalAlignment="Center" Style="{StaticResource Label}"/>
+                <TextBox Grid.Column="1" Name="TextBox_SaveLocation" Text="{Binding SaveLocation, Mode=TwoWay}" Margin="5,0,5,0"/>
+                <Button Grid.Column="2" ToolTip="Browse" Style="{StaticResource ImageButton}" Click="ButtonBrowse_Click">
+                    <Image Source="/Resources/icon_browse.png"/>
+                </Button>
+            </Grid>
+
+            <!--Controls-->
+            <Grid Margin="8" DockPanel.Dock="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Button Grid.Column="0" ToolTip="Start" Style="{StaticResource ImageButton}" IsEnabled="{Binding IsRunning, Converter={StaticResource BooleanNegativeConverter}}" Click="ButtonStart_Click">
+                    <Image Source="/Resources/icon_start.png"/>
+                </Button>
+                <Button Grid.Column="1" ToolTip="Stop" Style="{StaticResource ImageButton}" IsEnabled="{Binding IsRunning}" Click="ButtonStop_Click">
+                    <Image Source="/Resources/icon_stop.png"/>
+                </Button>
+
+                <TextBlock Grid.Column="2" Margin="8" VerticalAlignment="Center" Text="Stopped" Style="{StaticResource Status_Negative}" Visibility="{Binding IsRunning, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
+                <TextBlock Grid.Column="2" Margin="8" VerticalAlignment="Center" Text="Running" Style="{StaticResource Status_Positive}" Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                
+                <CheckBox Grid.Column="4" Margin="8" VerticalAlignment="Center" Content="Auto scroll logs" IsChecked="{Binding AutoScrollLogs}" Foreground="White"/>
+                <Button Grid.Column="5" ToolTip="Clear Logs" Style="{StaticResource ImageButton}" Click="ButtonClear_Click">
+                    <Image Source="/Resources/icon_clear.png"/>
+                </Button>
+            </Grid>
+
+            <!--Footer-->
+            <Grid DockPanel.Dock="Bottom">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" MinWidth="150" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="1" Margin="0, 0, 8, 0" Style="{StaticResource Footer}" Text="Last Backup:"/>
+                <TextBlock Grid.Column="2" Style="{StaticResource Footer}" Text="{Binding LastBackupDate, StringFormat='yyyy/MM/dd HH:mm:ss'}"/>
+            </Grid>
+
+            <!--Logs-->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="True" Margin="8" DockPanel.Dock="Bottom">
+                <StackPanel Name="Container_Logs" Margin="8" Style="{StaticResource Container_Logs}" />
+            </ScrollViewer>
+        </DockPanel>
+    </Grid>
+</Window>
