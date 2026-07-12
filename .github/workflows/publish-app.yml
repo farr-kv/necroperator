@@ -34,7 +34,7 @@ jobs:
     - name: Create artifact
       shell: pwsh
       run: |
-        $files = Get-ChildItem ./publish -File -Include *.exe,*.dll
+        $files = Get-ChildItem ./publish -File -Recurse -Exclude *.pdb
         Compress-Archive -Path $files.FullName -DestinationPath ./Necroperator.zip
 
     - name: Create release
