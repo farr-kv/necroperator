@@ -9,6 +9,7 @@ namespace Necroperator.UI.Windows.Main
             "1771", // ubiconnect
             "3559"  //Steam
         ];
+        private readonly IUbisoftService ubisoftService;
         private readonly IFileMonitor fileMonitor;
         private readonly IPeriodicBackupService backupService;
         private bool autoScrollLogs = true;
@@ -48,23 +49,25 @@ namespace Necroperator.UI.Windows.Main
             }
         }
 
-        public MainWindowModel(IFileMonitor fileMonitor, IPeriodicBackupService backupService)
+        public MainWindowModel(IUbisoftService ubisoftService, IFileMonitor fileMonitor, IPeriodicBackupService backupService)
         {
+            this.ubisoftService = ubisoftService;
             this.fileMonitor = fileMonitor;
             this.backupService = backupService;
 
-            var ubiPath = @"C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\savegames";
-            foreach (var id in GameIds)
+            if (ubisoftService.TryGetInstallationPath(out var ubiPath)) 
             {
-                var path = Directory.GetDirectories(ubiPath, id, SearchOption.AllDirectories).FirstOrDefault();
-                if (path is not null)
+                ubiPath = Path.Combine(ubiPath, "savegames");
+                foreach (var id in GameIds)
                 {
-                    this.SaveLocation = path;
-                    return;
+                    var path = Directory.GetDirectories(ubiPath, id, SearchOption.AllDirectories).FirstOrDefault();
+                    if (path is not null)
+                    {
+                        this.SaveLocation = path;
+                        return;
+                    }
                 }
             }
-
-            this.backupService = backupService;
         }
 
         public void StartWatching()

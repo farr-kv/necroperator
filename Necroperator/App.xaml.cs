@@ -30,6 +30,7 @@ namespace Necroperator
             services.AddSingleton<IEventBus, EventBus>();
             services.AddTransient<IFileMonitor, FileMonitor>();
             services.AddTransient<IPeriodicBackupService, PeriodicBackupService>();
+            services.AddTransient<IUbisoftService, UbisoftService>();
 
             // ViewModels
             services.AddTransient<MainWindowModel>();
