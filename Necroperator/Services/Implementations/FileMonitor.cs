@@ -7,11 +7,13 @@ namespace Necroperator.Services.Implementations
         public bool IsRunning => this.fileWatcher.EnableRaisingEvents;
         
         private readonly IEventBus eventBus;
+        private readonly IBackupManager backupManager;
         private readonly FileSystemWatcher fileWatcher;
 
-        public FileMonitor(IEventBus eventBus)
+        public FileMonitor(IEventBus eventBus, IBackupManager backupManager)
         {
             this.eventBus = eventBus;
+            this.backupManager = backupManager;
             this.fileWatcher = new();
         }
 
@@ -22,7 +24,7 @@ namespace Necroperator.Services.Implementations
 
             if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
             {
-                this.eventBus.Publish(Events.Error("Invalid save location."));
+                this.eventBus.Publish(UIEvents.Error("Invalid save location."));
                 return;
             }
 
@@ -30,10 +32,9 @@ namespace Necroperator.Services.Implementations
             this.fileWatcher.IncludeSubdirectories = false;
             this.fileWatcher.NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite;
             this.fileWatcher.EnableRaisingEvents = true;
-            this.fileWatcher.Changed += OnFileChanged;
-            this.fileWatcher.Created += OnFileCreated;
+            this.fileWatcher.Renamed += OnFileRenamed;
 
-            this.eventBus.Publish(Events.Info("Started monitoring files"));
+            this.eventBus.Publish(UIEvents.Info("Started monitoring files"));
         }
 
         public void Stop()
@@ -42,7 +43,7 @@ namespace Necroperator.Services.Implementations
                 throw new Exception("Service is already stopped");
 
             this.fileWatcher.EnableRaisingEvents = false;
-            this.eventBus.Publish(Events.Info("Stopped monitoring files"));
+            this.eventBus.Publish(UIEvents.Info("Stopped monitoring files"));
         }
 
         public void Dispose()
@@ -50,43 +51,17 @@ namespace Necroperator.Services.Implementations
             this.Stop();
         }
 
-        private void OnFileChanged(object sender, FileSystemEventArgs e)
+        private void OnFileRenamed(object sender, RenamedEventArgs e)
         {
-            if (e.FullPath.EndsWith(".delete"))
+            switch (Path.GetExtension(e.FullPath))
             {
-                File.Delete(e.FullPath);
-                var oldPath = e.FullPath.Remove(e.FullPath.Length - 7, 7); // remove .delete
-                var backupPath = oldPath + ".backup";
+                case ".save":
+                    this.backupManager.CreateBackup();
+                    break;
 
-                if (File.Exists(backupPath))
-                {
-                    try
-                    {
-                        File.Copy(backupPath, oldPath, true); // Restore backup
-                        this.eventBus.Publish(Events.Info($"Restored backup file {Path.GetFileName(oldPath)}"));
-                    }
-                    catch
-                    {
-                        this.eventBus.Publish(Events.Warn($"Unable to restore backup file: {Path.GetFileName(backupPath)}"));
-                    }
-                }   
-            }
-        }
-
-        private void OnFileCreated(object sender, FileSystemEventArgs e)
-        {
-            if (e.FullPath.EndsWith(".tmp"))
-            {
-                var oldPath = e.FullPath.Remove(e.FullPath.Length - 4, 4); // remove .tmp
-                try
-                {
-                    File.Copy(oldPath, oldPath + ".backup", true); // Keep running backup of save file before update
-                    this.eventBus.Publish(new Events.BackupCreated());
-                }
-                catch
-                {
-                    // During gameplay GRWL does not release the lock on the save file. Upon play death, this lock is released while creating the tmp/old/delete files
-                }
+                case ".delete":
+                    // TODO Restore latest backup if available
+                    break;
             }
         }
     }

@@ -22,8 +22,11 @@
   <ItemGroup>
     <Resource Include="Resources\banner.png" />
     <Resource Include="Resources\icon_browse.png" />
-    <Resource Include="Resources\icon_clear.png" />
+    <Resource Include="Resources\icon_delete.png" />
     <Resource Include="Resources\icon_close.png" />
+    <Resource Include="Resources\icon_refresh.png" />
+    <Resource Include="Resources\icon_restore.png" />
+    <Resource Include="Resources\icon_save.png" />
     <Resource Include="Resources\icon_start.png" />
     <Resource Include="Resources\icon_stop.png" />
   </ItemGroup>

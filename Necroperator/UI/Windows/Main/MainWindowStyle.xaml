@@ -47,9 +47,30 @@
         <Setter Property="BorderThickness" Value="0 0 0 1"/>
     </Style>
 
-    <Style TargetType="StackPanel" x:Key="Container_Logs">
+    <Style TargetType="StackPanel" x:Key="Snapshot_Container">
         <Setter Property="Background" Value="#60000000"/>
         <Setter Property="Orientation" Value="Vertical"/>
     </Style>
-    
+
+    <Style TargetType="Grid" x:Key="Snapshot_Row">
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#40FFFFFF" />
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock" x:Key="Snapshot_Text_Timestamp">
+        <Setter Property="Foreground" Value="{StaticResource ColourTextDimmed}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock" x:Key="Snapshot_Text_Name">
+        <Setter Property="Foreground" Value="{StaticResource ColourText}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Margin" Value="8 0 8 0"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
 </ResourceDictionary>

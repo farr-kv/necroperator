@@ -12,7 +12,10 @@
         ResizeMode="CanResizeWithGrip"
         AllowsTransparency="True"
         Background="Black"
-        Title="Necroperator">
+        Title="Necroperator"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Loaded="OnLoaded">
+    
     <Window.Resources>
         <ResourceDictionary>
             <converter:BooleanNegativeConverter x:Key="BooleanNegativeConverter" />
@@ -30,7 +33,7 @@
 
         <DockPanel Background="Transparent">
             <!--Title bar-->
-            <Grid Background="#A0000000" DockPanel.Dock="Top" MouseDown="GridTitlebar_MouseDown">
+            <Grid Background="#A0000000" DockPanel.Dock="Top" MouseDown="Titlebar_MouseDown">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
@@ -83,28 +86,49 @@
 
                 <TextBlock Grid.Column="2" Margin="8" VerticalAlignment="Center" Text="Stopped" Style="{StaticResource Status_Negative}" Visibility="{Binding IsRunning, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"/>
                 <TextBlock Grid.Column="2" Margin="8" VerticalAlignment="Center" Text="Running" Style="{StaticResource Status_Positive}" Visibility="{Binding IsRunning, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                
-                <CheckBox Grid.Column="4" Margin="8" VerticalAlignment="Center" Content="Auto scroll logs" IsChecked="{Binding AutoScrollLogs}" Foreground="White"/>
-                <Button Grid.Column="5" ToolTip="Clear Logs" Style="{StaticResource ImageButton}" Click="ButtonClear_Click">
-                    <Image Source="/Resources/icon_clear.png"/>
+
+                <Button Grid.Column="4" ToolTip="Create Backup Manually" Style="{StaticResource ImageButton}" Click="ButtonManualSave_Click">
+                    <Image Source="/Resources/icon_save.png"/>
+                </Button>
+
+                <Button Grid.Column="5" ToolTip="Refresh" Style="{StaticResource ImageButton}" Click="ButtonRefresh_Click">
+                    <Image Source="/Resources/icon_refresh.png"/>
                 </Button>
             </Grid>
 
-            <!--Footer-->
-            <Grid DockPanel.Dock="Bottom">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" MinWidth="150" />
-                </Grid.ColumnDefinitions>
-
-                <TextBlock Grid.Column="1" Margin="0, 0, 8, 0" Style="{StaticResource Footer}" Text="Last Backup:"/>
-                <TextBlock Grid.Column="2" Style="{StaticResource Footer}" Text="{Binding LastBackupDate, StringFormat='yyyy/MM/dd HH:mm:ss'}"/>
-            </Grid>
-
-            <!--Logs-->
+            <!--Snapshots-->
             <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="True" Margin="8" DockPanel.Dock="Bottom">
-                <StackPanel Name="Container_Logs" Margin="8" Style="{StaticResource Container_Logs}" />
+                <ItemsControl ItemsSource="{Binding Snapshots}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Style="{StaticResource Snapshot_Container}"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Style="{StaticResource Snapshot_Row}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="24" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Margin="8 0 0 0" Grid.Column="0" Style="{StaticResource Snapshot_Text_Timestamp}" Text="{Binding Timestamp, StringFormat=HH\\:mm\\:ss}" />
+                                <TextBlock Grid.Column="1" Style="{StaticResource Snapshot_Text_Name}"  Text="{Binding FileHash}" />
+
+                                <Button Grid.Column="2" ToolTip="Restore" Style="{StaticResource ImageButton}" Click="ButtonSnapshotRestore_Click">
+                                    <Image Source="/Resources/icon_restore.png"/>
+                                </Button>
+
+                                <Button Margin="0 0 8 0" Grid.Column="3" ToolTip="Delete" Style="{StaticResource ImageButton}" Click="ButtonSnapshotDelete_Click">
+                                    <Image Source="/Resources/icon_delete.png"/>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </ScrollViewer>
         </DockPanel>
     </Grid>

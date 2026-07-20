@@ -1,28 +1,76 @@
 ﻿using Microsoft.Win32;
 using Necroperator.Extensions;
+using Necroperator.Models;
 using Necroperator.Services;
-using Necroperator.UI.Controls.LogEvent;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Runtime.CompilerServices;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Necroperator.UI.Windows.Main
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        private MainWindowModel Model => (MainWindowModel)this.DataContext;
+        private readonly string[] GameIds = [
+            "1771", // Ubiconnect
+            "3559"  // Steam
+        ];
+        private readonly IUbisoftService ubisoftService;
+        private readonly IBackupManager backupManager;
         private readonly IEnumerable<IDisposable> disposables;
+        
+        private readonly IFileMonitor fileMonitor;
 
-        public MainWindow(IEventBus eventBus, MainWindowModel model)
+        public string SaveLocation
         {
-            this.DataContext = model;
-            InitializeComponent();
+            get => this.backupManager.SaveDirectory;
+            set
+            {
+                this.backupManager.SaveDirectory = value;
+                this.RaisePropertyChanged();
+                this.InvalidateSnapshots();
+            }
+        }
 
+        public bool IsRunning
+        {
+            get => fileMonitor.IsRunning;
+        }
+
+        public ObservableCollection<Snapshot> Snapshots { get; } = [];
+
+        public MainWindow(IUbisoftService ubisoftService, IEventBus eventBus, IFileMonitor fileMonitor, IBackupManager backupManager)
+        {
+            this.ubisoftService = ubisoftService;
+            this.fileMonitor = fileMonitor;
+            this.backupManager = backupManager;
             this.disposables = [
-                eventBus.RegisterForEvent<Events.Log>(OnLog),
-                eventBus.RegisterForEvent<Events.BackupCreated>(OnBackupCreated)
+                eventBus.RegisterForEvent<UIEvents.BackupCreated>(OnBackupCreated)
             ];
+
+            InitializeComponent();
+        }
+
+        private void OnLoaded(object sender, RoutedEventArgs e)
+        {
+            if (ubisoftService.TryGetInstallationPath(out var ubiPath))
+            {
+                ubiPath = Path.Combine(ubiPath, "savegames");
+                foreach (var id in GameIds)
+                {
+                    var path = Directory.GetDirectories(ubiPath, id, SearchOption.AllDirectories).FirstOrDefault();
+                    if (path is not null)
+                    {
+                        this.SaveLocation = path;
+                        break;
+                    }
+                }
+            }
         }
 
         protected override void OnClosed(EventArgs e)
@@ -32,7 +80,7 @@ namespace Necroperator.UI.Windows.Main
             base.OnClosed(e);
         }
 
-        private void GridTitlebar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void Titlebar_MouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
             this.DragMove();
         }
@@ -46,47 +94,89 @@ namespace Necroperator.UI.Windows.Main
         {
             var dialog = new OpenFolderDialog
             {
-                InitialDirectory = this.Model.SaveLocation,
+                InitialDirectory = this.SaveLocation,
                 Multiselect = false
             };
 
             if (dialog.ShowDialog() == true)
             {
-                this.Model.SaveLocation = dialog.FolderName;
+                this.SaveLocation = dialog.FolderName;
             }   
         }
 
         private void ButtonStart_Click(object sender, RoutedEventArgs e)
         {
-            this.Model.StartWatching();
+            this.fileMonitor.Start(this.SaveLocation);
+
+            if (IsRunning)
+                this.RaisePropertyChanged(nameof(IsRunning));
         }
 
         private void ButtonStop_Click(object sender, RoutedEventArgs e)
         {
-            this.Model.StopWatching();
+            this.fileMonitor.Stop();
+
+            if (!IsRunning)
+                this.RaisePropertyChanged(nameof(IsRunning));
         }
 
-        private void ButtonClear_Click(object sender, RoutedEventArgs e)
+        private void ButtonRefresh_Click(object sender, RoutedEventArgs e)
         {
-            this.Container_Logs.Children.Clear();
+            this.InvalidateSnapshots();
         }
 
-        private void OnLog(DateTimeOffset timestamp, Events.Log msg)
+        private void ButtonManualSave_Click(object sender, RoutedEventArgs e)
         {
-            this.RunOnUiThread(() => {
-                var element = new LogEventControl(timestamp, msg.Level, msg.Message);
-                this.Container_Logs.Children.Add(element);
+            this.backupManager.CreateBackup();
+        }
 
-                if (this.Model.AutoScrollLogs)
+        private void ButtonSnapshotRestore_Click(object sender, RoutedEventArgs e)
+        {
+            var snapshot = ((Control)sender).DataContext as Snapshot;
+            this.backupManager.RestoreBackup(snapshot!);
+        }
+
+        private void ButtonSnapshotDelete_Click(object sender, RoutedEventArgs e)
+        {
+            var snapshot = ((Control)sender).DataContext as Snapshot;
+            this.backupManager.DeleteBackup(snapshot!);
+            this.InvalidateSnapshots();
+        }
+
+        private void InvalidateSnapshots()
+        {
+            this.Snapshots.Clear();
+            foreach (var snapshot in this.backupManager.ListBackups())
+            {
+                this.Snapshots.Add(snapshot);
+            }
+        }
+
+        private void OnBackupCreated(DateTimeOffset timestamp, UIEvents.BackupCreated msg)
+        {
+            // Clear old snapshots that might've been deleted
+            var toRemove = this.Snapshots.Where(x => x.IsExpired).ToList();
+
+            this.RunOnUiThread(() =>
+            {
+                foreach (var snapshot in toRemove)
                 {
-                    element.BringIntoView();
+                    this.Snapshots.Remove(snapshot);
                 }
+                this.Snapshots.Insert(0, msg.Snapshot);
             });
         }
 
-        private void OnBackupCreated(DateTimeOffset timestamp, Events.BackupCreated msg)
+        #region INotifyPropertyChanged
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public void RaisePropertyChanged([CallerMemberName] string propertyName = "")
         {
-            this.RunOnUiThread(() => this.Model.LastBackupDate = timestamp);
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
+        #endregion
     }
 }

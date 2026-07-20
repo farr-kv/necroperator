@@ -21,19 +21,15 @@ namespace Necroperator
             mainWindow.Show();
 
             this.DispatcherUnhandledException += OnUnhandledException;
-
         }
 
         private void ConfigureServices(IServiceCollection services)
         {
             // Services
             services.AddSingleton<IEventBus, EventBus>();
+            services.AddSingleton<IBackupManager, BackupManager>();
             services.AddTransient<IFileMonitor, FileMonitor>();
-            services.AddTransient<IPeriodicBackupService, PeriodicBackupService>();
             services.AddTransient<IUbisoftService, UbisoftService>();
-
-            // ViewModels
-            services.AddTransient<MainWindowModel>();
 
             // Windows
             services.AddSingleton<MainWindow>();
@@ -51,7 +47,7 @@ namespace Necroperator
         private void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
             var logger = serviceProvider?.GetService<IEventBus>();
-            logger?.Publish(Events.Error($"Unhandled exception: {e.Exception.Message}"));
+            logger?.Publish(UIEvents.Error($"Unhandled exception: {e.Exception.Message}"));
         }
     }
 
