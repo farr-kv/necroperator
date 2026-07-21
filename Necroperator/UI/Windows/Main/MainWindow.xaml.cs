@@ -4,6 +4,7 @@ using Necroperator.Models;
 using Necroperator.Services;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -141,6 +142,12 @@ namespace Necroperator.UI.Windows.Main
             var snapshot = ((Control)sender).DataContext as Snapshot;
             this.backupManager.DeleteBackup(snapshot!);
             this.InvalidateSnapshots();
+        }
+
+        private void ButtonSnapshotOpen_Click(object sender, RoutedEventArgs e)
+        {
+            var snapshot = ((Control)sender).DataContext as Snapshot;
+            Process.Start("explorer.exe", snapshot!.Path);
         }
 
         private void InvalidateSnapshots()

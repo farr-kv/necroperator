@@ -97,39 +97,43 @@
             </Grid>
 
             <!--Snapshots-->
-            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" CanContentScroll="True" Margin="8" DockPanel.Dock="Bottom">
-                <ItemsControl ItemsSource="{Binding Snapshots}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Style="{StaticResource Snapshot_Container}"/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
+            <ListView Margin="8" DockPanel.Dock="Bottom" ItemsSource="{Binding Snapshots}">
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Timestamp"
+                            Width="Auto"
+                            DisplayMemberBinding="{Binding Timestamp, StringFormat=HH\\:mm\\:ss}" />
 
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Style="{StaticResource Snapshot_Row}">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="24" />
-                                    <ColumnDefinition Width="24" />
-                                </Grid.ColumnDefinitions>
+                        <GridViewColumn Header="Name"
+                            Width="Auto"
+                            DisplayMemberBinding="{Binding FileHash}" />
 
-                                <TextBlock Margin="8 0 0 0" Grid.Column="0" Style="{StaticResource Snapshot_Text_Timestamp}" Text="{Binding Timestamp, StringFormat=HH\\:mm\\:ss}" />
-                                <TextBlock Grid.Column="1" Style="{StaticResource Snapshot_Text_Name}"  Text="{Binding FileHash}" />
+                        <GridViewColumn Header="File(s)"
+                            Width="Auto"
+                            DisplayMemberBinding="{Binding NumberOfFiles}" />
 
-                                <Button Grid.Column="2" ToolTip="Restore" Style="{StaticResource ImageButton}" Click="ButtonSnapshotRestore_Click">
-                                    <Image Source="/Resources/icon_restore.png"/>
-                                </Button>
+                        <GridViewColumn Header="Actions" Width="Auto">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button ToolTip="Restore" Style="{StaticResource ImageButton_Small}" Click="ButtonSnapshotRestore_Click">
+                                            <Image Source="/Resources/icon_restore.png"/>
+                                        </Button>
 
-                                <Button Margin="0 0 8 0" Grid.Column="3" ToolTip="Delete" Style="{StaticResource ImageButton}" Click="ButtonSnapshotDelete_Click">
-                                    <Image Source="/Resources/icon_delete.png"/>
-                                </Button>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+                                        <Button Margin="0 0 8 0" ToolTip="Open in Explorer" Style="{StaticResource ImageButton_Small}" Click="ButtonSnapshotOpen_Click">
+                                            <Image Source="/Resources/icon_browse.png"/>
+                                        </Button>
+
+                                        <Button Margin="0 0 8 0" ToolTip="Delete" Style="{StaticResource ImageButton_Small}" Click="ButtonSnapshotDelete_Click">
+                                            <Image Source="/Resources/icon_delete.png"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
         </DockPanel>
     </Grid>
 </Window>
