@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Microsoft.Extensions.Logging;
+using System.IO;
 
 namespace Necroperator.Services.Implementations
 {
@@ -6,13 +7,13 @@ namespace Necroperator.Services.Implementations
     {
         public bool IsRunning => this.fileWatcher.EnableRaisingEvents;
         
-        private readonly IEventBus eventBus;
+        private readonly ILogger<FileMonitor> logger;
         private readonly IBackupManager backupManager;
         private readonly FileSystemWatcher fileWatcher;
 
-        public FileMonitor(IEventBus eventBus, IBackupManager backupManager)
+        public FileMonitor(IEventBus eventBus, IBackupManager backupManager, ILogger<FileMonitor> logger)
         {
-            this.eventBus = eventBus;
+            this.logger = logger;
             this.backupManager = backupManager;
             this.fileWatcher = new();
         }
@@ -24,7 +25,7 @@ namespace Necroperator.Services.Implementations
 
             if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
             {
-                this.eventBus.Publish(UIEvents.Error("Invalid save location."));
+                this.logger.LogWarning("Invalid save location.");
                 return;
             }
 
@@ -34,7 +35,7 @@ namespace Necroperator.Services.Implementations
             this.fileWatcher.EnableRaisingEvents = true;
             this.fileWatcher.Renamed += OnFileRenamed;
 
-            this.eventBus.Publish(UIEvents.Info("Started monitoring files"));
+            this.logger.LogInformation("Started monitoring files");
         }
 
         public void Stop()
@@ -43,7 +44,7 @@ namespace Necroperator.Services.Implementations
                 throw new Exception("Service is already stopped");
 
             this.fileWatcher.EnableRaisingEvents = false;
-            this.eventBus.Publish(UIEvents.Info("Stopped monitoring files"));
+            this.logger.LogInformation("Stopped monitoring files");
         }
 
         public void Dispose()

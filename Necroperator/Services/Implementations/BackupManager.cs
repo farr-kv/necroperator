@@ -9,7 +9,7 @@ namespace Necroperator.Services.Implementations
     {
         public string SaveDirectory { get; set; } = string.Empty;
         public string BackupDirectory => Path.Combine(this.SaveDirectory, "Backups");
-        public int MaxBackups { get; set; } = 20;
+        public int MaxBackups { get; set; } = 50;
 
         private readonly IEventBus eventBus;
         private readonly ILogger<BackupManager> logger;
@@ -94,7 +94,6 @@ namespace Necroperator.Services.Implementations
                     if (!Directory.Exists(snapshot.Path))
                     {
                         this.logger.LogWarning("Backup folder '{0}' does not exist.", snapshot.Path);
-                        this.eventBus.Publish(UIEvents.Error("Backup folder does not exist."));
                         return;
                     }
 

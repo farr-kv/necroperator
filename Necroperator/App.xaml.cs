@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Necroperator.Services;
 using Necroperator.Services.Implementations;
 using Necroperator.UI.Windows.Main;
@@ -53,8 +54,8 @@ namespace Necroperator
 
         private void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            var logger = serviceProvider?.GetService<IEventBus>();
-            logger?.Publish(UIEvents.Error($"Unhandled exception: {e.Exception.Message}"));
+            var logger = serviceProvider!.GetRequiredService<ILogger<App>>();
+            logger.LogError("Unexpected exception: {0}", e);
         }
     }
 
