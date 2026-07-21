@@ -2,6 +2,7 @@
 using Necroperator.Services;
 using Necroperator.Services.Implementations;
 using Necroperator.UI.Windows.Main;
+using Serilog;
 using System.Windows;
 
 namespace Necroperator
@@ -25,6 +26,12 @@ namespace Necroperator
 
         private void ConfigureServices(IServiceCollection services)
         {
+            var fileLogger = new LoggerConfiguration()
+                .WriteTo.File(@"Logs\.log", rollingInterval: RollingInterval.Day, retainedFileTimeLimit: TimeSpan.FromDays(14), rollOnFileSizeLimit: true)
+                .CreateLogger();
+
+            services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(fileLogger, dispose: true));
+
             // Services
             services.AddSingleton<IEventBus, EventBus>();
             services.AddSingleton<IBackupManager, BackupManager>();

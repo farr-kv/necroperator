@@ -1,4 +1,5 @@
-﻿using Necroperator.Models;
+﻿using Microsoft.Extensions.Logging;
+using Necroperator.Models;
 using System.IO;
 using System.Security.Cryptography;
 
@@ -11,11 +12,13 @@ namespace Necroperator.Services.Implementations
         public int MaxBackups { get; set; } = 20;
 
         private readonly IEventBus eventBus;
+        private readonly ILogger<BackupManager> logger;
         private readonly HashAlgorithm hashAlgorithm = SHA256.Create();
 
-        public BackupManager(IEventBus eventBus)
+        public BackupManager(IEventBus eventBus, ILogger<BackupManager> logger)
         {
             this.eventBus = eventBus;
+            this.logger = logger;
         }
 
         public void Dispose()
@@ -25,57 +28,103 @@ namespace Necroperator.Services.Implementations
 
         public void CreateBackup()
         {
-            // Create new backup folder
-            var hashValue = this.ComputeFileHash(this.SaveDirectory);
-            var backupPath = Path.Combine(this.BackupDirectory, hashValue);
-            if (Directory.Exists(backupPath))
-                return; // This snapshot has already been taken
-
-            Directory.CreateDirectory(backupPath);
-
-            // Copy all .save files to the new backup folder
-            var files = Directory.GetFiles(this.SaveDirectory, "*.save", SearchOption.TopDirectoryOnly);
-            foreach (var file in files)
+            using (this.logger.BeginScope("CreateBackup"))
             {
-                File.Copy(file, Path.Combine(backupPath, Path.GetFileName(file)));
-            }
+                this.logger.LogInformation("Create snapshot started.");
 
-            // Cleanup old backups
-            var info = new DirectoryInfo(this.BackupDirectory);
-            var backupsToDelete = info.GetDirectories()
-                .OrderByDescending(p => p.CreationTime)
-                .Skip(this.MaxBackups);
-            foreach (var dir in backupsToDelete)
-            {
-                Directory.Delete(dir.FullName, true);
-            }
+                // Create new backup folder
+                var hashValue = this.ComputeFileHash(this.SaveDirectory);
+                this.logger.LogInformation("Computed hash: {0}", hashValue);
+                var backupPath = Path.Combine(this.BackupDirectory, hashValue);
+                if (Directory.Exists(backupPath))
+                {
+                    this.logger.LogInformation("Create snapshot aborted: Backup already exists");
+                    return;
+                }
+                Directory.CreateDirectory(backupPath);
 
-            var snapshot = new Snapshot(File.GetCreationTime(backupPath), backupPath, hashValue);
-            this.eventBus.Publish(new UIEvents.BackupCreated(snapshot));
+                try
+                {
+                    // Copy all .save files to the new backup folder
+                    var files = Directory.GetFiles(this.SaveDirectory, "*.save", SearchOption.TopDirectoryOnly);
+                    foreach (var file in files)
+                    {
+                        var destination = Path.Combine(backupPath, Path.GetFileName(file));
+                        this.logger.LogDebug("Copying '{0, -200}' => '{1, -200}'", file, destination);
+                        File.Copy(file, destination);
+                    }
+                    this.logger.LogInformation("Copied {0} files to backup", files.Length);
+
+                    // Cleanup old backups
+                    var info = new DirectoryInfo(this.BackupDirectory);
+                    var backupsToDelete = info.GetDirectories()
+                        .OrderByDescending(p => p.CreationTime)
+                        .Skip(this.MaxBackups)
+                        .ToList();
+                    foreach (var dir in backupsToDelete)
+                    {
+                        this.logger.LogDebug("Deleting '{0, -200}'", dir.FullName);
+                        Directory.Delete(dir.FullName, true);
+                    }
+                    this.logger.LogInformation("Deleted {0} old backups", backupsToDelete.Count);
+
+                    var snapshot = this.CreateSnapshotFromPath(backupPath);
+                    this.eventBus.Publish(new UIEvents.BackupCreated(snapshot));
+                }
+                catch (Exception e)
+                {
+                    this.logger.LogError("Unexpected exception: {0}", e);
+
+                    this.logger.LogInformation("Cleaning failed backup directory");
+                    Directory.Delete(backupPath, true);
+                }
+
+                this.logger.LogInformation("Create snapshot completed.");
+            }
         }
 
         public void RestoreBackup(Snapshot snapshot)
         {
-            if (!Directory.Exists(snapshot.Path))
+            using (this.logger.BeginScope("RestoreBackup: {0}", snapshot.FileHash))
             {
-                this.eventBus.Publish(UIEvents.Error("Backup folder does not exist."));
-                return;
-            }
+                try
+                {
+                    this.logger.LogInformation("Restoring snapshot started.");
 
-            // Clear the save directory before restoring
-            var toDelete = Directory.GetFiles(this.SaveDirectory);
-            foreach (var file in toDelete)
-            {
-                File.Delete(file);
-            }
+                    if (!Directory.Exists(snapshot.Path))
+                    {
+                        this.logger.LogWarning("Backup folder '{0}' does not exist.", snapshot.Path);
+                        this.eventBus.Publish(UIEvents.Error("Backup folder does not exist."));
+                        return;
+                    }
 
-            // Copy all files from the backup folder to the save directory
-            var files = Directory.GetFiles(snapshot.Path);
-            foreach (var file in files)
-            {
-                File.Copy(file, Path.Combine(this.SaveDirectory, Path.GetFileName(file)), true);
+                    // Clear the save directory before restoring
+                    var toDelete = Directory.GetFiles(this.SaveDirectory);
+                    foreach (var file in toDelete)
+                    {
+                        this.logger.LogDebug("Deleting '{0, -200}'", file);
+                        File.Delete(file);
+                    }
+                    this.logger.LogInformation("Deleted {0} files", toDelete.Length);
+
+                    // Copy all files from the backup folder to the save directory
+                    var files = Directory.GetFiles(snapshot.Path);
+                    foreach (var file in files)
+                    {
+                        var destination = Path.Combine(this.SaveDirectory, Path.GetFileName(file));
+                        this.logger.LogDebug("Copying '{0, -200}' => '{1, -200}'", file, destination);
+                        File.Copy(file, destination, true);
+                    }
+                    this.logger.LogInformation("Copied {0} backup files", files.Length);
+
+                    this.logger.LogInformation("Restoring snapshot completed");
+                    this.eventBus.Publish(new UIEvents.BackupRestored());
+                }
+                catch (Exception e)
+                {
+                    this.logger.LogError("Unexpected exception: {0}", e);
+                }
             }
-            this.eventBus.Publish(new UIEvents.BackupRestored());
         }
 
         public void DeleteBackup(Snapshot snapshot)
@@ -90,7 +139,7 @@ namespace Necroperator.Services.Implementations
 
             return Directory.GetDirectories(this.BackupDirectory)
                             .Where(x => !string.IsNullOrEmpty(x))
-                            .Select(x => new Snapshot(File.GetCreationTime(x), x, Path.GetFileName(x)))
+                            .Select(this.CreateSnapshotFromPath)
                             .OrderByDescending(x => x.Timestamp);
         }
 
@@ -104,6 +153,11 @@ namespace Necroperator.Services.Implementations
 
             var data = hashAlgorithm.ComputeHash(stream.ToArray());
             return BitConverter.ToString(data).Replace("-", "");
+        }
+
+        private Snapshot CreateSnapshotFromPath(string path)
+        {
+            return new Snapshot(File.GetCreationTime(path), path, Directory.GetFiles(path).Length, Path.GetFileName(path));
         }
     }
 }
