@@ -7,11 +7,7 @@ Ghost Mode has got some nice functionality that does not exist in the base game 
 It is still beneficial to keep backups even if perma death is desired because of how many instant death bugs there are in the game. Eg, the helicopter pilot disconnects and all passengers fall to their deaths.
 
 # How
-This is achieved by making a last second backup as the character save is marked for deletion. Once the deletion is complete we automatically replace the old files with the backup.
-
-This is not 100% successful as it is subject to race-conditions (sometimes GRW will be able to delete before we are able to back it up) so we also keep a rolling backup every 10 minutes, which can then be manually copied if needed.
-
-<img width="427" height="624" alt="image" src="https://github.com/user-attachments/assets/68dbe29b-1aac-4ee5-ac4f-033ba912d6e8" />
+This is achieved by maintaining rolling backups triggered when the game writes to the local save files, this ensures that you always have the last 50 snapshots of your characters state. You'll have the option to roll back in small increments to find the last state before character loss.
 
 # Usage
 Disable cloud sync for GRW save files in the `Ubisoft Connect` client.
@@ -28,8 +24,10 @@ C:\Program Files (x86)\Ubisoft\Ubisoft Game Launcher\savegames\<accountId>\3559
 ```
 Then press the start button.
 
-<img width="1249" height="647" alt="image" src="https://github.com/user-attachments/assets/4e455340-bd77-4da2-a46d-d36b6e00425b" />
+<img width="768" height="498" alt="image" src="https://github.com/user-attachments/assets/03fa0e67-0300-492d-a859-3e8922a9d8e8" />
 
-After a character has died and a backup is restored GRW will need to be relaunched for the character to appear in the list.
-
-**NOTE**: _Leaving this running after your character has died would eventually overwrite your periodic backups (after 200 minutes) so be sure to resolve your character's death or stop `Necroperator`._
+### On character death
+1) Close `GRW`
+2) Restore the latest backup
+3) Relaunch `GRW`
+4) Access Ghost Mode. If your character is still dead, repeat step 2 with an older backup
