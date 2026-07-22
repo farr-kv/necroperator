@@ -31,20 +31,21 @@ namespace Necroperator.Services.Implementations
             using (this.logger.BeginScope("CreateBackup"))
             {
                 this.logger.LogInformation("Create snapshot started.");
-
-                // Create new backup folder
-                var hashValue = this.ComputeFileHash(this.SaveDirectory);
-                this.logger.LogInformation("Computed hash: {0}", hashValue);
-                var backupPath = Path.Combine(this.BackupDirectory, hashValue);
-                if (Directory.Exists(backupPath))
-                {
-                    this.logger.LogInformation("Create snapshot aborted: Backup already exists");
-                    return;
-                }
-                Directory.CreateDirectory(backupPath);
+                string? backupPath = null;
 
                 try
                 {
+                    // Create new backup folder
+                    var hashValue = this.ComputeFileHash(this.SaveDirectory);
+                    this.logger.LogInformation("Computed hash: {0}", hashValue);
+                    backupPath = Path.Combine(this.BackupDirectory, hashValue);
+                    if (Directory.Exists(backupPath))
+                    {
+                        this.logger.LogInformation("Create snapshot aborted: Backup already exists");
+                        return;
+                    }
+                    Directory.CreateDirectory(backupPath);
+
                     // Copy all .save files to the new backup folder
                     var files = Directory.GetFiles(this.SaveDirectory, "*.save", SearchOption.TopDirectoryOnly);
                     foreach (var file in files)
@@ -75,8 +76,11 @@ namespace Necroperator.Services.Implementations
                 {
                     this.logger.LogError("Unexpected exception: {0}", e);
 
-                    this.logger.LogInformation("Cleaning failed backup directory");
-                    Directory.Delete(backupPath, true);
+                    if (!string.IsNullOrEmpty(backupPath))
+                    {
+                        this.logger.LogInformation("Cleaning failed backup directory");
+                        Directory.Delete(backupPath, true);
+                    }
                 }
 
                 this.logger.LogInformation("Create snapshot completed.");
