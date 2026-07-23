@@ -9,4 +9,8 @@
 	<SolidColorBrush x:Key="ColourWarning" Color="#E68A00" />
 	<SolidColorBrush x:Key="ColourNegative" Color="#CC0000" />
 
+    <SolidColorBrush x:Key="ColourFocus1" Color="#40FFFFFF" />
+    <SolidColorBrush x:Key="ColourFocus2" Color="#80FFFFFF" />
+    <SolidColorBrush x:Key="ColourFocus3" Color="#A0FFFFFF" />
+
 </ResourceDictionary>

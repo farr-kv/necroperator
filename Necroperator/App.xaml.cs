@@ -22,7 +22,9 @@ namespace Necroperator
             var mainWindow = serviceProvider.GetRequiredService<MainWindow>();
             mainWindow.Show();
 
-            this.DispatcherUnhandledException += OnUnhandledException;
+            this.DispatcherUnhandledException += (_, e) => this.OnUnhandledException(e.Exception);
+            AppDomain.CurrentDomain.UnhandledException += (_, e) => this.OnUnhandledException((Exception)e.ExceptionObject);
+            TaskScheduler.UnobservedTaskException += (_, e) => this.OnUnhandledException(e.Exception);
         }
 
         private void ConfigureServices(IServiceCollection services)
@@ -45,17 +47,15 @@ namespace Necroperator
 
         private void OnExit(object sender, ExitEventArgs e)
         {
-            this.DispatcherUnhandledException -= OnUnhandledException;
             if (serviceProvider is IDisposable disposable)
             {
                 disposable.Dispose();
             }
         }
 
-        private void OnUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        private void OnUnhandledException(Exception e)
         {
-            var logger = serviceProvider!.GetRequiredService<ILogger<App>>();
-            logger.LogError("Unexpected exception: {0}", e);
+            serviceProvider?.GetRequiredService<ILogger<App>>()?.LogError("Unexpected exception: {0}", e);
         }
     }
 
